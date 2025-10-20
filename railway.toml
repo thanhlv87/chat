@@ -1,0 +1,11 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "cd backend && npm install && npm run start"
+
+[environments.production]
+variables = [
+  { name = "NODE_ENV", value = "production" },
+  { name = "JWT_SECRET", generateValue = true }
+]
