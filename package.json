@@ -1,0 +1,17 @@
+{
+  "name": "chat-app",
+  "version": "1.0.0",
+  "description": "Internal chat application with real-time messaging",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "cd backend && npm install && npm run start",
+    "install-backend": "cd backend && npm install",
+    "dev": "cd backend && npm run dev"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": ["chat", "real-time", "nodejs", "express", "socket.io"],
+  "author": "Chat App Developer",
+  "license": "MIT"
+}
