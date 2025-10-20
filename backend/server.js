@@ -36,7 +36,19 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files từ thư mục uploads
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
-// Routes
+// Serve frontend static files (cho production)
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+// API routes (phải đặt sau static files)
+app.use('/api/auth', authRoutes);
+app.use('/api/chat', authenticateToken, chatRoutes);
+
+// Catch all handler: send back React's index.html file for client-side routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+
+// API routes (phải đặt sau static files)
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', authenticateToken, chatRoutes);
 
