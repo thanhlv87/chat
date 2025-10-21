@@ -5,14 +5,17 @@ const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
+  // Đặt JWT_SECRET mặc định nếu không có trong environment
+  const secret = process.env.JWT_SECRET || 'fallback-secret-key-for-development-only';
+
   console.log('Auth middleware - Token:', token ? 'present' : 'missing');
-  console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'set' : 'missing');
+  console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'set' : 'using fallback');
 
   if (!token) {
     return res.status(401).json({ error: 'Không có token xác thực' });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+  jwt.verify(token, secret, (err, decoded) => {
     if (err) {
       console.error('JWT verify error:', err.message);
       return res.status(403).json({ error: 'Token không hợp lệ hoặc đã hết hạn' });
@@ -60,7 +63,10 @@ const requireAdmin = (req, res, next) => {
 };
 
 const generateToken = (userId) => {
-  const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
+  // Đặt JWT_SECRET mặc định nếu không có trong environment
+  const secret = process.env.JWT_SECRET || 'fallback-secret-key-for-development-only';
+
+  const token = jwt.sign({ userId }, secret, { expiresIn: '24h' });
   console.log('Generated token for user:', userId, 'secret exists:', !!process.env.JWT_SECRET);
   return token;
 };
