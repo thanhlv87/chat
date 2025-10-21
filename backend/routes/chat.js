@@ -159,7 +159,9 @@ router.get('/messages/:chatId', (req, res) => {
         }
 
         // Đảo ngược thứ tự để hiện tin nhắn cũ nhất trước
-        messages.reverse();
+        if (Array.isArray(messages)) {
+            messages.reverse();
+        }
         res.json({ messages });
       });
     }

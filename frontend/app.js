@@ -313,13 +313,27 @@ function displayMessages(messages) {
         }
 
         messages.forEach(message => {
+            // Kiểm tra currentUser có tồn tại không
+            if (!currentUser) {
+                console.error('Current user not found');
+                return;
+            }
+
             const messageElement = document.createElement('div');
             messageElement.className = `message ${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
 
-            const messageTime = new Date(message.created_at).toLocaleTimeString('vi-VN', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+            // Kiểm tra message.created_at có hợp lệ không
+            let messageTime = 'N/A';
+            try {
+                if (message.created_at) {
+                    messageTime = new Date(message.created_at).toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+            } catch (error) {
+                console.error('Error formatting message time:', error);
+            }
 
             let fileContent = '';
             if (message.file_path) {
@@ -350,18 +364,24 @@ function displayMessages(messages) {
             messageElement.innerHTML = `
                 <div class="message-content">
                     <div class="message-header">
-                        <span class="sender-name">${message.sender_name}</span>
+                        <span class="sender-name">${message.sender_name || 'Unknown'}</span>
                         <span class="message-time">${messageTime}</span>
                     </div>
-                    <div class="message-text">${message.content}</div>
-                    ${fileContent}
+                    <div class="message-text">${message.content || ''}</div>
+                    ${fileContent || ''}
                 </div>
             `;
 
-            messagesContainer.appendChild(messageElement);
+            if (messagesContainer) {
+                messagesContainer.appendChild(messageElement);
+            } else {
+                console.error('Cannot append message: container not found');
+            }
         });
 
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
     } catch (error) {
         console.error('Error displaying messages:', error);
     }
