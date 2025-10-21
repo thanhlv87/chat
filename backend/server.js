@@ -8,6 +8,7 @@ require('dotenv').config();
 // Import routes và middleware
 const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chat');
+const adminRoutes = require('./routes/admin');
 const { initializeDatabase } = require('./config/database');
 const { authenticateToken } = require('./middleware/auth');
 
@@ -51,6 +52,7 @@ app.get('*', (req, res) => {
 // API routes (phải đặt sau static files)
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', authenticateToken, chatRoutes);
+app.use('/api/admin', authenticateToken, adminRoutes);
 
 // Socket.io connection handling
 io.on('connection', (socket) => {
