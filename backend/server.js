@@ -49,10 +49,13 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// API routes (phải đặt sau static files)
+// API routes (phải đặt TRƯỚC static files để tránh conflict)
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', authenticateToken, chatRoutes);
-app.use('/api/admin', authenticateToken, adminRoutes);
+app.use('/api/admin', adminRoutes);
+
+// Serve frontend static files (SAU API routes)
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Socket.io connection handling
 io.on('connection', (socket) => {

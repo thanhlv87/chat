@@ -219,7 +219,25 @@
         // Lấy danh sách users
         async function loadUsers() {
             try {
+                console.log('Đang gọi API:', `${API_BASE}/admin/users`);
                 const response = await fetch(`${API_BASE}/admin/users`);
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.log('Error response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                console.log('Content-Type:', contentType);
+
+                if (!contentType || !contentType.includes('application/json')) {
+                    const textResponse = await response.text();
+                    console.log('Non-JSON response:', textResponse);
+                    throw new Error(`Expected JSON but got: ${contentType}`);
+                }
 
                 if (response.ok) {
                     const data = await response.json();
@@ -299,6 +317,7 @@
         }
 
         function showError(message) {
+            console.error('Admin Panel Error:', message);
             const errorDiv = document.getElementById('error-message');
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
