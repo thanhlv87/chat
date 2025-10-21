@@ -47,6 +47,24 @@
             color: #333;
         }
 
+        .admin-badge {
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .user-badge {
+            background: #6c757d;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
         .users-table tr:hover {
             background: #f8f9fa;
         }
@@ -155,6 +173,7 @@
                         <th>Avatar</th>
                         <th>Username</th>
                         <th>Email</th>
+                        <th>Quyền</th>
                         <th>Ngày tạo</th>
                         <th>Số Chat</th>
                         <th>Số Message</th>
@@ -243,6 +262,12 @@
                     </td>
                     <td><strong>${user.username}</strong></td>
                     <td>${user.email}</td>
+                    <td>
+                        ${user.is_admin ?
+                            '<span class="admin-badge">ADMIN</span>' :
+                            '<span class="user-badge">USER</span>'
+                        }
+                    </td>
                     <td>${new Date(user.created_at).toLocaleString('vi-VN')}</td>
                     <td>${user.chat_count || 0}</td>
                     <td>${user.message_count || 0}</td>
@@ -252,6 +277,16 @@
                         </button>
                     </td>
                     <td>
+                        ${user.is_admin ?
+                            (user.id !== currentUserId ?
+                                `<button class="action-btn" onclick="removeAdmin(${user.id}, '${user.username}')" style="background: #ffc107; color: #212529;">
+                                    <i class="fas fa-user-times"></i> Hủy Admin
+                                </button>` : ''
+                            ) :
+                            `<button class="action-btn" onclick="makeAdmin(${user.id}, '${user.username}')" style="background: #28a745;">
+                                <i class="fas fa-user-plus"></i> Set Admin
+                            </button>`
+                        }
                         <button class="action-btn" onclick="resetPassword(${user.id}, '${user.username}')">
                             <i class="fas fa-key"></i> Reset PW
                         </button>
@@ -357,6 +392,54 @@
 
                 if (response.ok) {
                     alert('Đã xóa user thành công!');
+                    loadUsers(); // Reload danh sách
+                } else {
+                    const data = await response.json();
+                    alert('Lỗi: ' + data.error);
+                }
+            } catch (error) {
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        async function makeAdmin(userId, username) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/admin/users/${userId}/make-admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (response.ok) {
+                    alert(`Đã cấp quyền admin cho "${username}"!`);
+                    loadUsers(); // Reload danh sách
+                } else {
+                    const data = await response.json();
+                    alert('Lỗi: ' + data.error);
+                }
+            } catch (error) {
+                alert('Lỗi kết nối server');
+            }
+        }
+
+        async function removeAdmin(userId, username) {
+            if (!confirm(`Bạn có chắc chắn muốn hủy quyền admin của "${username}"?`)) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/admin/users/${userId}/remove-admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+
+                if (response.ok) {
+                    alert(`Đã hủy quyền admin của "${username}"!`);
                     loadUsers(); // Reload danh sách
                 } else {
                     const data = await response.json();

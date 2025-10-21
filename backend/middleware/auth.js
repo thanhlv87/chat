@@ -31,6 +31,21 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+const requireAdmin = (req, res, next) => {
+  // Kiểm tra user có phải admin không
+  db.get('SELECT is_admin FROM users WHERE id = ?', [req.userId], (err, user) => {
+    if (err) {
+      return res.status(500).json({ error: 'Lỗi kiểm tra quyền admin' });
+    }
+
+    if (!user || !user.is_admin) {
+      return res.status(403).json({ error: 'Không có quyền truy cập admin panel' });
+    }
+
+    next();
+  });
+};
+
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
 };
