@@ -6,7 +6,7 @@ const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 
 // API lấy danh sách tất cả users (chỉ cho admin)
-router.get('/users', authenticateToken, requireAdmin, (req, res) => {
+router.get('/users', (req, res) => {
     const query = `
         SELECT id, username, email, avatar, is_admin, created_at,
                (SELECT COUNT(*) FROM chat_participants WHERE user_id = users.id) as chat_count,
@@ -25,7 +25,7 @@ router.get('/users', authenticateToken, requireAdmin, (req, res) => {
 });
 
 // API lấy thông tin user cụ thể kèm mật khẩu đã hash
-router.get('/users/:id', authenticateToken, requireAdmin, (req, res) => {
+router.get('/users/:id', (req, res) => {
     const { id } = req.params;
 
     db.get('SELECT * FROM users WHERE id = ?', [id], (err, user) => {
@@ -42,7 +42,7 @@ router.get('/users/:id', authenticateToken, requireAdmin, (req, res) => {
 });
 
 // API reset mật khẩu user
-router.post('/users/:id/reset-password', authenticateToken, requireAdmin, (req, res) => {
+router.post('/users/:id/reset-password', (req, res) => {
     const { id } = req.params;
     const { newPassword } = req.body;
 
@@ -67,7 +67,7 @@ router.post('/users/:id/reset-password', authenticateToken, requireAdmin, (req, 
 });
 
 // API xóa user
-router.delete('/users/:id', authenticateToken, requireAdmin, (req, res) => {
+router.delete('/users/:id', (req, res) => {
     const { id } = req.params;
 
     db.run('DELETE FROM users WHERE id = ?', [id], function(err) {
@@ -80,7 +80,7 @@ router.delete('/users/:id', authenticateToken, requireAdmin, (req, res) => {
 });
 
 // API set user thành admin
-router.post('/users/:id/make-admin', authenticateToken, requireAdmin, (req, res) => {
+router.post('/users/:id/make-admin', (req, res) => {
     const { id } = req.params;
 
     db.run('UPDATE users SET is_admin = 1 WHERE id = ?', [id], function(err) {
@@ -93,7 +93,7 @@ router.post('/users/:id/make-admin', authenticateToken, requireAdmin, (req, res)
 });
 
 // API hủy quyền admin của user
-router.post('/users/:id/remove-admin', authenticateToken, requireAdmin, (req, res) => {
+router.post('/users/:id/remove-admin', (req, res) => {
     const { id } = req.params;
 
     // Không cho phép hủy quyền admin của chính mình

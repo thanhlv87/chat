@@ -219,17 +219,7 @@
         // Lấy danh sách users
         async function loadUsers() {
             try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    showError('Không tìm thấy token đăng nhập');
-                    return;
-                }
-
-                const response = await fetch(`${API_BASE}/admin/users`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
+                const response = await fetch(`${API_BASE}/admin/users`);
 
                 if (response.ok) {
                     const data = await response.json();
@@ -320,12 +310,7 @@
 
         async function viewPassword(userId) {
             try {
-                const token = localStorage.getItem('token');
-                const response = await fetch(`${API_BASE}/admin/users/${userId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
+                const response = await fetch(`${API_BASE}/admin/users/${userId}`);
 
                 if (response.ok) {
                     const data = await response.json();
@@ -352,12 +337,10 @@
             }
 
             try {
-                const token = localStorage.getItem('token');
                 const response = await fetch(`${API_BASE}/admin/users/${currentUserId}/reset-password`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`,
                     },
                     body: JSON.stringify({ newPassword })
                 });
@@ -382,12 +365,8 @@
             }
 
             try {
-                const token = localStorage.getItem('token');
                 const response = await fetch(`${API_BASE}/admin/users/${userId}`, {
                     method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
                 });
 
                 if (response.ok) {
@@ -404,12 +383,8 @@
 
         async function makeAdmin(userId, username) {
             try {
-                const token = localStorage.getItem('token');
                 const response = await fetch(`${API_BASE}/admin/users/${userId}/make-admin`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
                 });
 
                 if (response.ok) {
@@ -430,12 +405,8 @@
             }
 
             try {
-                const token = localStorage.getItem('token');
                 const response = await fetch(`${API_BASE}/admin/users/${userId}/remove-admin`, {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
                 });
 
                 if (response.ok) {
