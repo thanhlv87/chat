@@ -77,9 +77,11 @@ router.post('/register', async (req, res) => {
 });
 
 // Đăng nhập
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
+
+    console.log('Login attempt:', { username, hasPassword: !!password });
 
     if (!username || !password) {
       return res.status(400).json({ error: 'Vui lòng nhập tên đăng nhập và mật khẩu' });
@@ -88,12 +90,15 @@ router.post('/login', (req, res) => {
     // Tìm user theo username
     db.get('SELECT * FROM users WHERE username = ?', [username], async (err, user) => {
       if (err) {
+        console.error('Database error:', err);
         return res.status(500).json({ error: 'Lỗi server' });
       }
 
       if (!user) {
         return res.status(401).json({ error: 'Tên đăng nhập hoặc mật khẩu không đúng' });
       }
+
+      console.log('User found:', { id: user.id, username: user.username, isAdmin: user.is_admin });
 
       // Kiểm tra mật khẩu
       const isValidPassword = await bcrypt.compare(password, user.password);
@@ -103,18 +108,25 @@ router.post('/login', (req, res) => {
 
       // Tạo token mới
       const token = generateToken(user.id);
+      console.log('Token generated for user:', user.id);
 
       // Xóa session cũ và tạo session mới
-      await clearSession(null); // Xóa tất cả session cũ của user này
-      await storeSession(user.id, token);
+      try {
+        await clearSession(null); // Xóa tất cả session cũ của user này
+        await storeSession(user.id, token);
+        console.log('Session stored successfully');
+      } catch (sessionError) {
+        console.error('Session error:', sessionError);
+      }
 
       res.json({
         message: 'Đăng nhập thành công',
         token,
-        user: { id: user.id, username: user.username, email: user.email, avatar: user.avatar }
+        user: { id: user.id, username: user.username, email: user.email, avatar: user.avatar, is_admin: user.is_admin }
       });
     });
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ error: 'Lỗi server' });
   }
 });
