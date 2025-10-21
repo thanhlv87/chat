@@ -171,4 +171,18 @@ router.get('/me', (req, res) => {
   }
 });
 
+// API kiểm tra trạng thái đăng nhập để debug
+router.get('/debug-users', (req, res) => {
+    db.all('SELECT id, username, email, is_admin, created_at FROM users', [], (err, users) => {
+        if (err) {
+            return res.status(500).json({ error: 'Lỗi lấy danh sách users' });
+        }
+
+        res.json({
+            users,
+            message: 'Debug info - chỉ dùng trong development'
+        });
+    });
+});
+
 module.exports = router;
