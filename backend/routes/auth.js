@@ -217,9 +217,11 @@ router.post('/create-test-user', async (req, res) => {
             ['testuser', 'test@example.com', hashedPassword, 1],
             function(err) {
                 if (err) {
+                    console.error('Error creating test user:', err);
                     return res.status(500).json({ error: 'Lỗi tạo user test' });
                 }
 
+                console.log('Test user created successfully');
                 res.json({
                     message: 'Đã tạo user test thành công',
                     credentials: {
@@ -231,6 +233,52 @@ router.post('/create-test-user', async (req, res) => {
             }
         );
     } catch (error) {
+        console.error('Create test user error:', error);
+        res.status(500).json({ error: 'Lỗi server' });
+    }
+});
+
+// API tạo user mặc định nếu chưa có user nào
+router.post('/init-default-user', async (req, res) => {
+    try {
+        // Kiểm tra xem đã có user nào chưa
+        db.get('SELECT COUNT(*) as count FROM users', [], async (err, row) => {
+            if (err) {
+                console.error('Error checking users count:', err);
+                return res.status(500).json({ error: 'Lỗi kiểm tra users' });
+            }
+
+            if (row.count > 0) {
+                return res.json({ message: 'Đã có users trong hệ thống', userCount: row.count });
+            }
+
+            // Tạo user mặc định
+            const defaultPassword = '123456';
+            const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+            db.run(
+                'INSERT INTO users (username, email, password, is_admin) VALUES (?, ?, ?, ?)',
+                ['admin', 'admin@example.com', hashedPassword, 1],
+                function(err) {
+                    if (err) {
+                        console.error('Error creating default user:', err);
+                        return res.status(500).json({ error: 'Lỗi tạo user mặc định' });
+                    }
+
+                    console.log('Default admin user created');
+                    res.json({
+                        message: 'Đã tạo user mặc định thành công',
+                        credentials: {
+                            username: 'admin',
+                            password: defaultPassword,
+                            email: 'admin@example.com'
+                        }
+                    });
+                }
+            );
+        });
+    } catch (error) {
+        console.error('Init default user error:', error);
         res.status(500).json({ error: 'Lỗi server' });
     }
 });

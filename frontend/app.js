@@ -153,7 +153,10 @@ async function loadMessages(chatId) {
 
         if (response.ok) {
             const data = await response.json();
+            console.log('Messages data received:', data);
             displayMessages(data.messages);
+        } else {
+            console.error('Failed to load messages:', response.status, response.statusText);
         }
     } catch (error) {
         console.error('Error loading messages:', error);
@@ -315,8 +318,22 @@ function displayMessages(messages) {
         messages.forEach(message => {
             // Kiểm tra currentUser có tồn tại không
             if (!currentUser) {
-                console.error('Current user not found');
-                return;
+                console.error('Current user not found, using fallback');
+                // Tạo fallback currentUser từ localStorage token
+                const token = localStorage.getItem('token');
+                if (token) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        currentUser = { id: payload.userId };
+                        console.log('Recreated currentUser from token:', currentUser);
+                    } catch (error) {
+                        console.error('Cannot recreate currentUser from token:', error);
+                        return;
+                    }
+                } else {
+                    console.error('No token found to recreate currentUser');
+                    return;
+                }
             }
 
             const messageElement = document.createElement('div');
