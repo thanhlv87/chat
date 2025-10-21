@@ -34,28 +34,21 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// API routes (PHẢI đặt TRƯỚC static files)
+app.use('/api/auth', authRoutes);
+app.use('/api/chat', authenticateToken, chatRoutes);
+app.use('/api/admin', adminRoutes);
+
 // Serve static files từ thư mục uploads
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Serve frontend static files (cho production)
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// API routes (phải đặt sau static files)
-app.use('/api/auth', authRoutes);
-app.use('/api/chat', authenticateToken, chatRoutes);
-
-// Catch all handler: send back React's index.html file for client-side routing
+// Catch all handler: send back index.html for client-side routing
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
-
-// API routes (phải đặt TRƯỚC static files để tránh conflict)
-app.use('/api/auth', authRoutes);
-app.use('/api/chat', authenticateToken, chatRoutes);
-app.use('/api/admin', adminRoutes);
-
-// Serve frontend static files (SAU API routes)
-app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Socket.io connection handling
 io.on('connection', (socket) => {
