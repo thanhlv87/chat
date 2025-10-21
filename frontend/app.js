@@ -259,7 +259,19 @@ function showError(message) {
 }
 
 function displayConversations(chats) {
+    // Kiểm tra conversationsList có tồn tại không
+    if (!conversationsList) {
+        console.error('Conversations list not found');
+        return;
+    }
+
     conversationsList.innerHTML = '';
+
+    if (!Array.isArray(chats)) {
+        console.error('Chats is not an array:', chats);
+        conversationsList.innerHTML = '<div class="no-conversations">Lỗi tải danh sách cuộc hội thoại</div>';
+        return;
+    }
 
     if (chats.length === 0) {
         conversationsList.innerHTML = '<div class="no-conversations">Chưa có cuộc hội thoại nào</div>';
@@ -286,80 +298,106 @@ function displayConversations(chats) {
 }
 
 function displayMessages(messages) {
-    messagesContainer.innerHTML = '';
-
-    messages.forEach(message => {
-        const messageElement = document.createElement('div');
-        messageElement.className = `message ${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
-
-        const messageTime = new Date(message.created_at).toLocaleTimeString('vi-VN', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-
-        let fileContent = '';
-        if (message.file_path) {
-            if (message.message_type === 'image') {
-                fileContent = `
-                    <div class="message-file">
-                        <div class="file-info">
-                            <i class="fas fa-image file-icon"></i>
-                            <span>${message.file_name}</span>
-                        </div>
-                        <img src="${window.APP_CONFIG.UPLOAD_URL}/${message.file_path}"
-                             alt="${message.file_name}"
-                             style="max-width: 200px; border-radius: 8px; margin-top: 8px;">
-                    </div>
-                `;
-            } else {
-                fileContent = `
-                    <div class="message-file">
-                        <div class="file-info">
-                            <i class="fas fa-file file-icon"></i>
-                            <span>${message.file_name}</span>
-                        </div>
-                    </div>
-                `;
-            }
+    try {
+        // Kiểm tra messagesContainer có tồn tại không
+        if (!messagesContainer) {
+            console.error('Messages container not found');
+            return;
         }
 
-        messageElement.innerHTML = `
-            <div class="message-content">
-                <div class="message-header">
-                    <span class="sender-name">${message.sender_name}</span>
-                    <span class="message-time">${messageTime}</span>
+        messagesContainer.innerHTML = '';
+
+        if (!Array.isArray(messages)) {
+            console.error('Messages is not an array:', messages);
+            return;
+        }
+
+        messages.forEach(message => {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
+
+            const messageTime = new Date(message.created_at).toLocaleTimeString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            let fileContent = '';
+            if (message.file_path) {
+                if (message.message_type === 'image') {
+                    fileContent = `
+                        <div class="message-file">
+                            <div class="file-info">
+                                <i class="fas fa-image file-icon"></i>
+                                <span>${message.file_name}</span>
+                            </div>
+                            <img src="${window.APP_CONFIG.UPLOAD_URL}/${message.file_path}"
+                                 alt="${message.file_name}"
+                                 style="max-width: 200px; border-radius: 8px; margin-top: 8px;">
+                        </div>
+                    `;
+                } else {
+                    fileContent = `
+                        <div class="message-file">
+                            <div class="file-info">
+                                <i class="fas fa-file file-icon"></i>
+                                <span>${message.file_name}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            messageElement.innerHTML = `
+                <div class="message-content">
+                    <div class="message-header">
+                        <span class="sender-name">${message.sender_name}</span>
+                        <span class="message-time">${messageTime}</span>
+                    </div>
+                    <div class="message-text">${message.content}</div>
+                    ${fileContent}
                 </div>
-                <div class="message-text">${message.content}</div>
-                ${fileContent}
-            </div>
-        `;
+            `;
 
-        messagesContainer.appendChild(messageElement);
-    });
+            messagesContainer.appendChild(messageElement);
+        });
 
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    } catch (error) {
+        console.error('Error displaying messages:', error);
+    }
 }
 
 function selectConversation(chatId, element) {
-    // Remove active class from all conversations
-    document.querySelectorAll('.conversation-item').forEach(item => {
-        item.classList.remove('active');
-    });
+    try {
+        // Remove active class from all conversations
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.classList.remove('active');
+        });
 
-    // Add active class to selected conversation
-    element.classList.add('active');
-    currentChatId = chatId;
+        // Add active class to selected conversation
+        if (element) {
+            element.classList.add('active');
+        }
+        currentChatId = chatId;
 
-    // Show chat area
-    document.getElementById('no-chat-selected').classList.add('hidden');
-    document.getElementById('chat-area').classList.remove('hidden');
+        // Show chat area
+        const noChatSelected = document.getElementById('no-chat-selected');
+        const chatArea = document.getElementById('chat-area');
 
-    // Load messages
-    loadMessages(chatId);
+        if (noChatSelected && chatArea) {
+            noChatSelected.classList.add('hidden');
+            chatArea.classList.remove('hidden');
+        }
 
-    // Join chat room via Socket.io
-    if (socket) {
-        socket.emit('join-chat', chatId);
+        // Load messages
+        loadMessages(chatId);
+
+        // Join chat room via Socket.io
+        if (socket) {
+            socket.emit('join-chat', chatId);
+        }
+    } catch (error) {
+        console.error('Error selecting conversation:', error);
     }
 }
 
