@@ -83,6 +83,7 @@ const clearSession = (token) => {
 
 module.exports = {
   authenticateToken,
+  requireAdmin,
   generateToken,
   storeSession,
   clearSession
