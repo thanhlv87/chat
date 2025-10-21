@@ -197,4 +197,42 @@ router.get('/debug-users', (req, res) => {
     });
 });
 
+// API test đơn giản không cần authentication
+router.get('/test', (req, res) => {
+    res.json({
+        message: 'API hoạt động bình thường',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development'
+    });
+});
+
+// API tạo user test với mật khẩu đơn giản
+router.post('/create-test-user', async (req, res) => {
+    try {
+        const testPassword = '123456';
+        const hashedPassword = await bcrypt.hash(testPassword, 10);
+
+        db.run(
+            'INSERT OR IGNORE INTO users (username, email, password, is_admin) VALUES (?, ?, ?, ?)',
+            ['testuser', 'test@example.com', hashedPassword, 1],
+            function(err) {
+                if (err) {
+                    return res.status(500).json({ error: 'Lỗi tạo user test' });
+                }
+
+                res.json({
+                    message: 'Đã tạo user test thành công',
+                    credentials: {
+                        username: 'testuser',
+                        password: testPassword,
+                        email: 'test@example.com'
+                    }
+                });
+            }
+        );
+    } catch (error) {
+        res.status(500).json({ error: 'Lỗi server' });
+    }
+});
+
 module.exports = router;
